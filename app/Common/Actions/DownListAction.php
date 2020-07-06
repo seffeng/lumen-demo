@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 
 class DownListAction
 {
-    const TYPE_CSRF_TOKEN = 'csrfToken';
     const TYPE_TEST = 'test';
 
     /**
@@ -29,10 +28,6 @@ class DownListAction
             }
             if ($typeList) foreach ($typeList as $type) {
                 switch ($type) {
-                    case self::TYPE_CSRF_TOKEN : {
-                        $data[$type] = csrf_token();
-                        break;
-                    }
                     case self::TYPE_TEST : {
                         $data[$type] = ['key1' => 'value1', 'key2' => 'value2'];
                         break;
