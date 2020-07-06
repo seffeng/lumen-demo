@@ -1,0 +1,1 @@
+This frontend.home. Now is {{ date('Y-m-d H:i:s') }}

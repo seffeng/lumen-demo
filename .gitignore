@@ -1,0 +1,9 @@
+/storage/*.key
+/vendor
+/.buildpath
+/.project
+/.settings
+/.idea
+/.env
+/*.lock
+!.gitignore

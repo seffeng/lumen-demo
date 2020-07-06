@@ -1,0 +1,53 @@
+{
+    "name": "seffeng/lumen-demo",
+    "description": "Lumen Demo",
+    "keywords": [
+        "framework",
+        "lumen",
+        "seffeng"
+    ],
+    "homepage": "https://github.com/seffeng/lumen-demo",
+    "license": "MIT",
+    "type": "project",
+    "authors": [
+        {
+            "name": "seffeng",
+            "email": "save.zxf@gmail.com",
+            "homepage": "https://github.com/seffeng"
+        }
+    ],
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "require": {
+        "php": "^7.2.5",
+        "fruitcake/laravel-cors": "^2.0",
+        "illuminate/redis": "^7.18",
+        "laravel/lumen-framework": "^7.0",
+        "seffeng/lumen-basics": "^1.0",
+        "tymon/jwt-auth": "^1.0"
+    },
+    "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.2"
+    },
+    "autoload": {
+        "classmap": [
+            "database/seeds"
+        ],
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ]
+    }
+}
