@@ -43,7 +43,6 @@ class Test extends Command
      */
     public function handle()
     {
-        var_dump(config('app.name'));exit;
         var_dump('测试：'. date('Y-m-d H:i:s'));
         var_dump('user: '. $this->argument('user'), 'age: '. $this->argument('age'), 'sex: '. $this->argument('sex'), 'debug: '. $this->option('debug'), 'check: '. $this->option('check'));
     }
