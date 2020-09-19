@@ -24,8 +24,10 @@
     "require": {
         "php": "^7.2.5",
         "fruitcake/laravel-cors": "^2.0",
+        "guzzlehttp/guzzle": "^7.0",
         "illuminate/redis": "^7.18",
         "laravel/lumen-framework": "^7.0",
+        "phpoffice/phpspreadsheet": "^1.14",
         "seffeng/lumen-basics": "^1.0",
         "tymon/jwt-auth": "^1.0"
     },
