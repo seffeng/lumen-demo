@@ -31,6 +31,9 @@ $ php ./artisan migrate --seed
 # 3. /app/Web 目录下增加对应应用；
 # 4. /routes 目录下增加对应路由；
 # 5. 其他：/storage/framework/views、/resources/views。
+
+7、注意；
+# 数据库默认时区为 +00:00，可在 /config/database.php 注释 timezone 或修改 DB_TIMEZONE。
 ```
 
 ## 目录说明
