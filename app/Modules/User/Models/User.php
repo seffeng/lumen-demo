@@ -78,7 +78,7 @@ class User extends Model implements AuthenticatableContracts, JWTSubject
     {
         $this->login_at = time();
         $this->login_count += 1;
-        $this->login_ip = ip2long(request()->ip());
+        $this->login_ip = ip2long(app('request')->ip());
     }
 
     /**
