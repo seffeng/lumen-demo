@@ -12,6 +12,8 @@ use App\Common\Base\Service;
 use App\Modules\Admin\Requests\AdminSearchRequest;
 use App\Modules\Admin\Requests\AdminCreateRequest;
 use App\Modules\Admin\Requests\AdminUpdateRequest;
+use Illuminate\Support\Carbon;
+use App\Common\Constants\FormatConst;
 
 class AdminService extends Service
 {
@@ -207,7 +209,7 @@ class AdminService extends Service
                 'username' => $model->username,
                 'statusId' => $model->status_id,
                 'statusName' => $model->getStatus()->getName(),
-                'createDate' => date('Y-m-d H:i', $model->created_at),
+                'createDate' => Carbon::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
             ]);
         }
         return [
