@@ -8,10 +8,13 @@ php 版本 >= 7.2.5
 ## 安装部署
 ```shell
 # composer 安装
-1、lumen7
+1、lumen8
 $ composer create-project seffeng/lumen-demo
 
-1、lumen6
+2、lumen7
+$ composer create-project seffeng/lumen-demo=7.* --prefer-dist
+
+3、lumen6
 $ composer create-project seffeng/lumen-demo=6.* --prefer-dist
 
 # 源码 安装
