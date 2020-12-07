@@ -27,6 +27,7 @@ class SiteController extends Controller
             $form->load($request->input());
             $perPage = $request->get($form->getPerPageName());
             $perPage > 0 && $form->setPerPage($perPage);
+            $form->sortable();
             $items = $this->getAdminService()->getAdminStore($form);
             return $this->responseSuccess($items);
         } catch (\Exception $e) {

@@ -14,6 +14,7 @@ use App\Modules\Admin\Requests\AdminCreateRequest;
 use App\Modules\Admin\Requests\AdminUpdateRequest;
 use Illuminate\Support\Carbon;
 use App\Common\Constants\FormatConst;
+use App\Common\Constants\TypeConst;
 
 class AdminService extends Service
 {
@@ -189,7 +190,15 @@ class AdminService extends Service
             $query->likeUsername($username);
         }
         $query->notDelete();
-        return $query->orderBy('id', 'desc')->paginate($form->getPerPage());
+
+        if ($orderItems = $form->getOrderBy()) {
+            foreach ($orderItems as $attribute => $order) {
+                $query->orderBy($attribute, $order);
+            }
+        } else {
+            $query->orderBy('id', TypeConst::ORDERBY_DESC);
+        }
+        return $query->paginate($form->getPerPage());
     }
 
     /**
