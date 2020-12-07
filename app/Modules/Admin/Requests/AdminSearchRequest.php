@@ -16,5 +16,18 @@ class AdminSearchRequest extends FormRequest
      *
      * @var array
      */
-    protected  $fillable = ['id', 'username'];
+    protected  $fillable = ['id', 'username', 'orderBy'];
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Seffeng\Basics\Base\FormRequest::fetchSortKeyItems()
+     */
+    protected function fetchSortKeyItems()
+    {
+        return [
+            'id' => 'id',
+            'createDate' => 'created_at'
+        ];
+    }
 }
