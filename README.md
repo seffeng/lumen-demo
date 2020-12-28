@@ -164,18 +164,20 @@ $ php ./artisan migrate --seed
 
 ### backend
 
-| 名称       | 地址         | 方式   | 参数              |
-| ---------- | ------------ | ------ | ----------------- |
-| 数据获取   | /down-list   | GET    | type              |
-| 登录       | /login       | POST   | username,password |
-| 登出       | /logout      | POST   |                   |
-| 是否登录   | /check-login | GET    |                   |
-| 登录用户   | /auth        | GET    |                   |
-| 修改资料   | /auth        | PUT    | username          |
-| 管理员列表 | /admin/index | GET    |                   |
-| 管理员添加 | /admin/index | POST   | username,password |
-| 管理员编辑 | /admin/index | PUT    | username,password |
-| 管理员删除 | /admin/index | DELETE | id                |
+| 名称       | 地址            | 方式   | 参数              |
+| ---------- | --------------- | ------ | ----------------- |
+| 数据获取   | /down-list      | GET    | type              |
+| 登录       | /login          | POST   | username,password |
+| 登出       | /logout         | POST   |                   |
+| 是否登录   | /check-login    | GET    |                   |
+| 登录用户   | /auth           | GET    |                   |
+| 修改资料   | /auth           | PUT    | username          |
+| 管理员列表 | /admin          | GET    |                   |
+| 管理员添加 | /admin          | POST   | username,password |
+| 管理员编辑 | /admin          | PUT    | username,password |
+| 管理员删除 | /admin/{id}     | DELETE | id                |
+| 管理员锁定 | /admin/off/{id} | PUT    | id                |
+| 管理员解锁 | /admin/on/{id}  | PUT    | id                |
 
 ### frontend
 
