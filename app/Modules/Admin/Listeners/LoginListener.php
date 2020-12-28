@@ -67,6 +67,7 @@ class LoginListener implements ShouldQueue
                     'typeId' => TypeConst::LOG_LOCK,
                     'moduleId' => ModuleConst::ADMIN,
                     'operatorId' => 0,
+                    'clientIp' => $ip,
                     'content' => trans('admin.systemLocked')
                 ]));
             }
