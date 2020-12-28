@@ -33,7 +33,6 @@ class BatchUserSeeder extends Seeder
                 'delete_id' => DeleteConst::NOT,
                 'login_count' => 0,
                 'login_at' => 0,
-                'login_ip' => 0,
                 'created_at' => $time,
                 'updated_at' => $time,
             ];

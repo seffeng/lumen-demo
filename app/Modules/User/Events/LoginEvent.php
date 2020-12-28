@@ -2,15 +2,10 @@
 
 namespace App\Modules\User\Events;
 
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use App\Modules\User\Models\User;
 
 class LoginEvent
 {
-    use InteractsWithSockets, SerializesModels;
-
     /**
      *
      * @var User
@@ -18,23 +13,20 @@ class LoginEvent
     private $user;
 
     /**
+     *
+     * @var array
+     */
+    private $data;
+
+    /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, array $data = [])
     {
         $this->user = $user;
-    }
-
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
-     */
-    public function broadcastOn()
-    {
-        return new PrivateChannel('channel-name');
+        $this->data = $data;
     }
 
     /**
@@ -46,5 +38,16 @@ class LoginEvent
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月28日
+     * @return array
+     */
+    public function getData()
+    {
+        return $this->data;
     }
 }

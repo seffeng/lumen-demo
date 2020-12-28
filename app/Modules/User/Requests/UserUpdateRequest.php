@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use App\Common\Constants\DeleteConst;
 use App\Common\Rules\Password;
 use App\Modules\User\Models\User;
+use Seffeng\LaravelHelpers\Helpers\Arr;
 /**
  *
  * @author zxf
@@ -55,13 +56,8 @@ class UserUpdateRequest extends FormRequest
      */
     public function messages()
     {
-        return [
-            'required' => trans('common.required'),
-            'min' => trans('common.min'),
-            'max' => trans('common.max'),
-            'between' => trans('common.between'),
-            'unique' => trans('common.unique'),
-        ];
+        return Arr::merge(parent::messages(), [
+        ]);
     }
 
     /**

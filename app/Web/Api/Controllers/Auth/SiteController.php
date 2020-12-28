@@ -12,6 +12,9 @@ use App\Web\Api\Requests\Auth\UserUpdateRequest;
 use App\Common\Exceptions\BaseException;
 use Seffeng\LaravelHelpers\Helpers\Arr;
 use Namshi\JOSE\JWS;
+use App\Modules\User\Exceptions\UserPasswordException;
+use App\Common\Constants\TypeConst;
+use App\Common\Constants\ModuleConst;
 
 class SiteController extends Controller
 {
@@ -31,17 +34,21 @@ class SiteController extends Controller
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
                 $userService = $this->getUserService()->setAuth(config('packet.api.guard'));
-                if ($token = $userService->userLogin($form->getFillItems('username'), $form->getFillItems('password'))) {
+                if ($token = $userService->userLogin($form)) {
+                    $request->merge(['loginLogParams' => $form->getLoginLogParams()]);
                     return $this->responseSuccess([
                         'token' => [
                             'token' => $token,
                             'expiredAt' => Arr::get(JWS::load($token)->getPayload(), 'exp', 0)
                         ],
                         'user' => $userService->getLoginUserToArray(),
-                    ], trans('user.login_success'));
+                    ], trans('user.loginSuccess'));
                 }
-                return $this->responseError(trans('user.login_failure'));
+                return $this->responseError(trans('user.loginFailure'));
             }
+        } catch (UserPasswordException $e) {
+            $request->merge(['loginLogParams' => $form->getLoginLogParams()]);
+            return $this->responseError($e->getMessage());
         } catch (UserException $e) {
             return $this->responseError($e->getMessage());
         } catch (\Exception $e) {
@@ -60,8 +67,11 @@ class SiteController extends Controller
     {
         try {
             $userService = $this->getUserService()->setAuth(config('packet.api.guard'));
-            $userService->userLogout();
-            return $this->responseSuccess(['url' => '/login']);
+            if ($userService->userLogout()) {
+                $request->merge(['loginLogParams' => ['typeId' => TypeConst::LOG_LOGOUT, 'moduleId' => ModuleConst::USER]]);
+                return $this->responseSuccess(['url' => '/login']);
+            }
+            return $this->responseError(trans('user.logoutFailure'));
         } catch (BaseException $e) {
             return $this->responseError($e->getMessage());
         } catch (\Exception $e) {
@@ -104,9 +114,10 @@ class SiteController extends Controller
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             }
             if ($userService->updateUser($form)) {
-                return $this->responseSuccess([], trans('user.self_update_success'));
+                $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                return $this->responseSuccess([], trans('user.selfUpdateSuccess'));
             }
-            return $this->responseSuccess([], trans('user.self_update_failure'));
+            return $this->responseSuccess([], trans('user.selfUpdateFailure'));
         } catch (\Exception $e) {
             return $this->responseException($e);
         }

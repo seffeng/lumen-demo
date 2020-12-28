@@ -74,11 +74,11 @@ class User extends Model implements AuthenticatableContracts, JWTSubject
      * @date    2019年10月21日
      * @param string $ipAddress
      */
-    public function updateLoginValues()
+    public function updateLoginValues(string $ipAddress = '')
     {
-        $this->login_at = time();
-        $this->login_count += 1;
-        $this->login_ip = ip2long(request()->ip());
+        $this->setAttribute('login_at', time());
+        $this->setAttribute('login_count', $this->login_count + 1);
+        $this->setAttribute('login_ip', $ipAddress);
     }
 
     /**

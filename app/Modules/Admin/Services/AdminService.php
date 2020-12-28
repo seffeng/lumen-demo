@@ -7,7 +7,6 @@ use App\Modules\Admin\Exceptions\AdminNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use App\Modules\Admin\Exceptions\AdminException;
 use App\Modules\Admin\Exceptions\AdminStatusException;
-use App\Modules\Admin\Events\LoginEvent;
 use App\Common\Base\Service;
 use App\Modules\Admin\Requests\AdminSearchRequest;
 use App\Modules\Admin\Requests\AdminCreateRequest;
@@ -15,6 +14,16 @@ use App\Modules\Admin\Requests\AdminUpdateRequest;
 use Illuminate\Support\Carbon;
 use App\Common\Constants\FormatConst;
 use App\Common\Constants\TypeConst;
+use App\Common\Constants\StatusConst;
+use App\Common\Constants\CacheKeyConst;
+use Illuminate\Support\Facades\Cache;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use App\Common\Constants\ModuleConst;
+use App\Modules\Admin\Requests\AdminStatusRequest;
+use App\Modules\Admin\Requests\AdminDeleteRequest;
+use App\Modules\Admin\Requests\AdminLoginRequest;
+use App\Modules\Admin\Exceptions\AdminPasswordException;
 
 class AdminService extends Service
 {
@@ -46,7 +55,7 @@ class AdminService extends Service
             if ($model) {
                 return $model;
             }
-            throw new AdminNotFoundException(trans('admin.not_found'));
+            throw new AdminNotFoundException(trans('admin.notFound'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -80,7 +89,7 @@ class AdminService extends Service
             if ($model) {
                 return $model;
             }
-            throw new AdminNotFoundException(trans('admin.not_found'));
+            throw new AdminNotFoundException(trans('admin.notFound'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -90,30 +99,33 @@ class AdminService extends Service
      *
      * @author zxf
      * @date    2019年9月29日
-     * @param string $username
-     * @param string $password
-     * @param bool $remember
+     * @param AdminLoginRequest $form
      * @throws AdminException
      * @throws AdminStatusException
      * @throws AdminNotFoundException
      * @throws \Exception
      * @return boolean
      */
-    public function adminLogin(string $username, string $password, bool $remember = false)
+    public function adminLogin(AdminLoginRequest $form)
     {
         try {
-            $userItem = $this->notNullByUsername($username);
+            $userItem = $this->notNullByUsername($form->getFillItems('username'));
             if ($userItem->getStatus()->getIsNormal()) {
-                if ($userItem->verifyPassword($password)) {
-                    $token = $this->getAuthGuard()->login($userItem, $remember);
-                    event(new LoginEvent($userItem));
+                if ($userItem->verifyPassword($form->getFillItems('password'))) {
+                    $token = $this->getAuthGuard()->login($userItem, $form->getFillItems('remember'));
+                    $form->setLoginLogParams(TypeConst::LOG_LOGIN, ModuleConst::ADMIN, ['model' => $userItem]);
                     return $token;
                 }
-                throw new AdminException(trans('admin.pass_error'));
+                $form->setLoginLogParams(TypeConst::LOG_LOGIN, ModuleConst::ADMIN, [
+                    'model' => $userItem,
+                    'statusId' => StatusConst::FAILD,
+                    'faildCount' => $this->getLoginFaildCount($userItem)
+                ]);
+                throw new AdminPasswordException(trans('admin.passError'));
             }
-            throw new AdminStatusException(trans('admin.forbid'));
+            throw new AdminStatusException(trans('admin.locked'));
         } catch (AdminNotFoundException $e) {
-            throw new AdminNotFoundException(trans('admin.pass_error'));
+            throw new AdminNotFoundException(trans('admin.passError'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -126,7 +138,16 @@ class AdminService extends Service
      */
     public function adminLogout()
     {
-        return $this->getAuthGuard()->logout();
+        try {
+            $this->getAuthGuard()->logout();
+            return true;
+        } catch (TokenExpiredException $e) {
+            return true;
+        } catch (JWTException $e) {
+            return false;
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -189,6 +210,15 @@ class AdminService extends Service
         if ($username = $form->getFillItems('username')) {
             $query->likeUsername($username);
         }
+        if ($username = $form->getFillItems('username')) {
+            $query->likeUsername($username);
+        }
+        if ($createdStartAt = $form->getFillItems('startDate')) {
+            $query->where('created_at', '>=', strtotime($createdStartAt));
+        }
+        if ($createdEndAt = $form->getFillItems('endDate')) {
+            $query->where('created_at', '<=', strtotime($createdEndAt));
+        }
         $query->notDelete();
 
         if ($orderItems = $form->getOrderBy()) {
@@ -243,14 +273,22 @@ class AdminService extends Service
     public function createAdmin(AdminCreateRequest $form)
     {
         try {
-            $model = new Admin();
-            $model->fill([
-                'username' => $form->getFillItems('username'),
-                'password' => $form->getFillItems('password'),
-            ]);
-            $model->encryptPassword();
-            $model->loadDefaultValue();
-            return $model->save();
+            if ($form->getIsPass()) {
+                $model = new Admin();
+                $model->fill([
+                    'username' => $form->getFillItems('username'),
+                    'password' => $form->getFillItems('password'),
+                ]);
+                $model->encryptPassword();
+                $model->loadDefaultValue();
+
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_CREATE, ModuleConst::ADMIN);
+                    return true;
+                }
+                return false;
+            }
+            throw new AdminException(trans('common.validatorError'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -267,13 +305,26 @@ class AdminService extends Service
     public function updateAdmin(AdminUpdateRequest $form)
     {
         try {
-            $model = $this->notNullById($form->getFillItems('id'));
-            $model->fill([
-                'username' => $form->getFillItems('username'),
-                'password' => $form->getFillItems('password'),
-            ]);
-            $model->encryptPassword();
-            return $model->save();
+            if ($form->getIsPass()) {
+                $model = $this->notNullById($form->getFillItems('id'));
+                $password = $form->getFillItems('password');
+                $model->fill(array_filter($form->getFillItems(), function($value) {
+                    return $value;
+                }));
+                if ($password) {
+                    $model->fill([
+                        'password' => $password
+                    ]);
+                    $model->encryptPassword();
+                }
+                $diffChanges = $model->diffChanges(array_diff(array_keys($form->getFillItems()), ['password']));
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_UPDATE, ModuleConst::ADMIN, $diffChanges);
+                    return true;
+                }
+                return false;
+            }
+            throw new AdminException(trans('common.validatorError'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -283,19 +334,117 @@ class AdminService extends Service
      *
      * @author zxf
      * @date    2019年10月29日
-     * @param  int $id
+     * @param  AdminDeleteRequest $form
      * @throws \Exception
      * @return boolean
      */
-    public function deleteAdmin(int $id)
+    public function deleteAdmin(AdminDeleteRequest $form)
     {
         try {
-            $model = $this->notNullById($id);
-            $model->delete();
-            return $model->save();
+            if ($form->getIsPass()) {
+                $model = $this->notNullById($form->getFillItems('id'));
+                $model->delete();
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_DELETE, ModuleConst::ADMIN);
+                    return true;
+                }
+                return false;
+            }
+            throw new AdminException(trans('common.validatorError'));
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param AdminStatusRequest $form
+     * @throws \Exception
+     * @return boolean
+     */
+    public function onAdmin(AdminStatusRequest $form)
+    {
+        try {
+            if ($form->getIsPass()) {
+                $model = $this->notNullById($form->getFillItems('id'));
+                $model->onAdmin();
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_UNLOCK, ModuleConst::ADMIN);
+                    Cache::forget($this->getLoginFailedCacheKey($model->id));
+                    return true;
+                }
+                return false;
+            }
+            throw new AdminException(trans('common.validatorError'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param AdminStatusRequest $form
+     * @throws \Exception
+     * @return boolean
+     */
+    public function offAdmin(AdminStatusRequest $form)
+    {
+        try {
+            if ($form->getIsPass()) {
+                $model = $this->notNullById($form->getFillItems('id'));
+                $model->offAdmin();
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_LOCK, ModuleConst::ADMIN);
+                    return true;
+                }
+                return false;
+            }
+            throw new AdminException(trans('common.validatorError'));
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param int $id
+     * @return string
+     */
+    protected function getLoginFailedCacheKey(int $id)
+    {
+        return CacheKeyConst::BACKEND_LOGIN_FALID_USER . $id;
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param Admin $model
+     * @return number
+     */
+    public function getLoginFaildCount(Admin $model)
+    {
+        $count = intval(Cache::get($this->getLoginFailedCacheKey($model->id)));
+        $count++;
+        Cache::put($this->getLoginFailedCacheKey($model->id), $count, $this->getLoginFaildCacheTTL());
+        return $count;
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @return number
+     */
+    private function getLoginFaildCacheTTL()
+    {
+        return CacheKeyConst::TTL_TEN_MINUTE;
     }
 
     /**

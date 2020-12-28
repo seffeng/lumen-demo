@@ -16,7 +16,7 @@ class AdminSearchRequest extends FormRequest
      *
      * @var array
      */
-    protected  $fillable = ['id', 'username', 'orderBy'];
+    protected  $fillable = ['id', 'username', 'startDate', 'endDate', 'orderBy'];
 
     /**
      *

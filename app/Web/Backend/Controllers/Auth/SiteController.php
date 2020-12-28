@@ -11,6 +11,9 @@ use App\Modules\Admin\Exceptions\AdminException;
 use App\Web\Backend\Requests\Admin\AdminUpdateRequest;
 use Seffeng\LaravelHelpers\Helpers\Arr;
 use Namshi\JOSE\JWS;
+use App\Common\Constants\TypeConst;
+use App\Common\Constants\ModuleConst;
+use App\Modules\Admin\Exceptions\AdminPasswordException;
 
 class SiteController extends Controller
 {
@@ -29,17 +32,21 @@ class SiteController extends Controller
             if ($errorItems = $form->getErrorItems($validate)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
-                if ($token = $this->getAdminService()->adminLogin($form->getFillItems('username'), $form->getFillItems('password'))) {
+                if ($token = $this->getAdminService()->adminLogin($form)) {
+                    $request->merge(['loginLogParams' => $form->getLoginLogParams()]);
                     return $this->responseSuccess([
                         'token' => [
                             'token' => $token,
                             'expiredAt' => Arr::get(JWS::load($token)->getPayload(), 'exp', 0)
                         ],
                         'admin' => $this->getAdminService()->getLoginAdminToArray()
-                    ], trans('admin.login_success'));
+                    ], trans('admin.loginSuccess'));
                 }
-                return $this->responseError(trans('admin.login_failure'));
+                return $this->responseError(trans('admin.loginFailure'));
             }
+        } catch (AdminPasswordException $e) {
+            $request->merge(['loginLogParams' => $form->getLoginLogParams()]);
+            return $this->responseError($e->getMessage());
         } catch (AdminException $e) {
             return $this->responseError($e->getMessage());
         } catch (\Exception $e) {
@@ -56,8 +63,15 @@ class SiteController extends Controller
      */
     public function logout(Request $request)
     {
-        $this->getAdminService()->adminLogout();
-        return $this->responseSuccess(['url' => '/login']);
+        try {
+            if ($this->getAdminService()->adminLogout()) {
+                $request->merge(['loginLogParams' => ['typeId' => TypeConst::LOG_LOGOUT, 'moduleId' => ModuleConst::ADMIN]]);
+                return $this->responseSuccess(['url' => '/login']);
+            }
+            return $this->responseError(trans('admin.logoutFailure'));
+        } catch (\Exception $e) {
+            return $this->responseException($e);
+        }
     }
 
     /**
@@ -105,9 +119,10 @@ class SiteController extends Controller
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             }
             if ($this->getAdminService()->updateAdmin($form)) {
-                return $this->responseSuccess([], trans('admin.self_update_success'));
+                $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                return $this->responseSuccess([], trans('admin.selfUpdateSuccess'));
             }
-            return $this->responseSuccess([], trans('admin.self_update_failure'));
+            return $this->responseSuccess([], trans('admin.selfUpdateFailure'));
         } catch (\Exception $e) {
             return $this->responseException($e);
         }

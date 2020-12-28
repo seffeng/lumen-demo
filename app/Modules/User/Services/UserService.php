@@ -7,12 +7,16 @@ use App\Modules\User\Exceptions\UserNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use App\Modules\User\Exceptions\UserException;
 use App\Modules\User\Exceptions\UserStatusException;
-use App\Modules\User\Events\LoginEvent;
 use App\Common\Constants\DeleteConst;
 use App\Modules\User\Requests\UserUpdateRequest;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Common\Exceptions\BaseException;
+use App\Modules\User\Requests\UserLoginRequest;
+use App\Common\Constants\TypeConst;
+use App\Common\Constants\ModuleConst;
+use App\Common\Constants\StatusConst;
+use App\Modules\User\Exceptions\UserPasswordException;
 
 class UserService
 {
@@ -50,7 +54,7 @@ class UserService
             if ($model) {
                 return $model;
             }
-            throw new UserNotFoundException(trans('user.not_found'));
+            throw new UserNotFoundException(trans('user.notFound'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -84,7 +88,7 @@ class UserService
             if ($model) {
                 return $model;
             }
-            throw new UserNotFoundException(trans('user.not_found'));
+            throw new UserNotFoundException(trans('user.notFound'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -94,30 +98,32 @@ class UserService
      *
      * @author zxf
      * @date    2019年9月29日
-     * @param string $username
-     * @param string $password
-     * @param bool $remember
+     * @param UserLoginRequest $form
      * @throws UserException
      * @throws UserStatusException
      * @throws UserNotFoundException
      * @throws \Exception
      * @return boolean
      */
-    public function userLogin(string $username, string $password, bool $remember = false)
+    public function userLogin(UserLoginRequest $form)
     {
         try {
-            $userItem = $this->notNullByUsername($username);
+            $userItem = $this->notNullByUsername($form->getFillItems('username'));
             if ($userItem->getStatus()->getIsNormal()) {
-                if ($userItem->verifyPassword($password)) {
-                    $token = $this->getAuthGuard()->login($userItem, $remember);
-                    event(new LoginEvent($userItem));
+                if ($userItem->verifyPassword($form->getFillItems('password'))) {
+                    $token = $this->getAuthGuard()->login($userItem, $form->getFillItems('remember'));
+                    $form->setLoginLogParams(TypeConst::LOG_LOGIN, ModuleConst::USER);
                     return $token;
                 }
-                throw new UserException(trans('user.pass_error'));
+                $form->setLoginLogParams(TypeConst::LOG_LOGIN, ModuleConst::USER, [
+                    'model' => $userItem,
+                    'statusId' => StatusConst::FAILD
+                ]);
+                throw new UserPasswordException(trans('user.passError'));
             }
-            throw new UserStatusException(trans('user.forbid'));
+            throw new UserStatusException(trans('user.locked'));
         } catch (UserNotFoundException $e) {
-            throw new UserNotFoundException(trans('user.pass_error'));
+            throw new UserNotFoundException(trans('user.passError'));
         } catch (\Exception $e) {
             throw $e;
         }
@@ -131,7 +137,8 @@ class UserService
     public function userLogout()
     {
         try {
-            return $this->getAuthGuard()->logout();
+            $this->getAuthGuard()->logout();
+            return true;
         } catch (TokenExpiredException $e) {
             return true;
         } catch (JWTException $e) {
@@ -192,18 +199,26 @@ class UserService
     public function updateUser(UserUpdateRequest $form)
     {
         try {
-            $model = $this->notNullById($form->getFillItems('id'));
-            $password = $form->getFillItems('password');
-            $model->fill([
-                'username' => $form->getFillItems('username'),
-            ]);
-            if ($password) {
+            if ($form->getIsPass()) {
+                $model = $this->notNullById($form->getFillItems('id'));
+                $password = $form->getFillItems('password');
                 $model->fill([
-                    'password' => $form->getFillItems('password'),
+                    'username' => $form->getFillItems('username'),
                 ]);
-                $model->encryptPassword();
+                if ($password) {
+                    $model->fill([
+                        'password' => $form->getFillItems('password'),
+                    ]);
+                    $model->encryptPassword();
+                }
+                $diffChanges = $model->diffChanges(['username']);
+                if ($model->save()) {
+                    $form->setOperateLogParams($model, TypeConst::LOG_UPDATE, ModuleConst::USER, $diffChanges);
+                    return true;
+                }
+                return false;
             }
-            return $model->save();
+            throw new UserException(trans('common.validatorError'));
         } catch (\Exception $e) {
             throw $e;
         }

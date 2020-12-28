@@ -4,6 +4,7 @@ namespace App\Modules\User\Requests;
 
 use App\Common\Base\FormRequest;
 use App\Common\Rules\Password;
+use Seffeng\LaravelHelpers\Helpers\Arr;
 
 class UserLoginRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UserLoginRequest extends FormRequest
      *
      * @var array
      */
-    protected $fillable = ['username', 'password'];
+    protected $fillable = ['username', 'password', 'remember'];
 
     /**
      *
@@ -36,6 +37,11 @@ class UserLoginRequest extends FormRequest
                 'required',
                 'between:6,20',
                 new Password()
+            ],
+            'remember' => [
+                function($attribute, $value, $fail) {
+                    $this->setFillItem($attribute, boolval($value));
+                }
             ]
         ];
     }
@@ -47,12 +53,8 @@ class UserLoginRequest extends FormRequest
      */
     public function messages()
     {
-        return [
-            'required' => trans('common.required'),
-            'min' => trans('common.min'),
-            'max' => trans('common.max'),
-            'between' => trans('common.between'),
-        ];
+        return Arr::merge(parent::messages(), [
+        ]);
     }
 
     /**

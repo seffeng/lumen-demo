@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use App\Modules\Admin\Models\Admin;
 use App\Common\Constants\DeleteConst;
 use App\Common\Rules\Password;
+use Seffeng\LaravelHelpers\Helpers\Arr;
 /**
  *
  * @author zxf
@@ -41,7 +42,7 @@ class AdminUpdateRequest extends FormRequest
                 })
             ],
             'password' => [
-                'required',
+                'nullable',
                 'between:6,20',
                 new Password()
             ],
@@ -55,13 +56,8 @@ class AdminUpdateRequest extends FormRequest
      */
     public function messages()
     {
-        return [
-            'required' => trans('common.required'),
-            'min' => trans('common.min'),
-            'max' => trans('common.max'),
-            'between' => trans('common.between'),
-            'unique' => trans('common.unique'),
-        ];
+        return Arr::merge(parent::messages(), [
+        ]);
     }
 
     /**

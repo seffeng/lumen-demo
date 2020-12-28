@@ -14,4 +14,10 @@ class FormatConst
      * @var string
      */
     const DATE_YMDHI = 'Y/m/d H:i';
+
+    /**
+     * 每天 86400 秒
+     * @var integer
+     */
+    const DATE_DAY_SECOND = 86399;
 }

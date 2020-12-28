@@ -82,7 +82,9 @@ $app->middleware([
 
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
-    'checkLogin' => App\Http\Middleware\CheckLogin::class,
+    'check.login' => App\Http\Middleware\CheckLogin::class,
+    'log.operate' => App\Http\Middleware\OperateLog::class,
+    'log.login' => App\Http\Middleware\LoginLog::class
 ]);
 
 /*

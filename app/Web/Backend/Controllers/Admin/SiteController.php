@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Validator;
 use App\Web\Backend\Requests\Admin\AdminCreateRequest;
 use App\Web\Backend\Requests\Admin\AdminUpdateRequest;
 use App\Modules\Admin\Exceptions\AdminException;
+use App\Web\Backend\Requests\Admin\AdminDeleteRequest;
+use App\Web\Backend\Requests\Admin\AdminStatusRequest;
 
 class SiteController extends Controller
 {
@@ -23,12 +25,12 @@ class SiteController extends Controller
     public function index(Request $request)
     {
         try {
-            $form = $this->getAdminSearchRequest();
+            $form = $this->getSearchRequest();
             $form->load($request->input());
             $perPage = $request->get($form->getPerPageName());
             $perPage > 0 && $form->setPerPage($perPage);
             $form->sortable();
-            $items = $this->getAdminService()->getAdminStore($form);
+            $items = $this->getService()->getAdminStore($form);
             return $this->responseSuccess($items);
         } catch (\Exception $e) {
             return $this->responseException($e);
@@ -45,16 +47,17 @@ class SiteController extends Controller
     public function create(Request $request)
     {
         try {
-            $form = $this->getAdminCreateRequest();
+            $form = $this->getCreateRequest();
             $validator = Validator::make($form->load($request->post()), $form->rules(), $form->messages(), $form->attributes());
             if ($errorItems = $form->getErrorItems($validator)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
-                if ($this->getAdminService()->createAdmin($form)) {
-                    return $this->responseSuccess([], trans('admin.create_success'));
+                if ($this->getService()->createAdmin($form)) {
+                    $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                    return $this->responseSuccess([], trans('admin.createSuccess'));
                 }
             }
-            return $this->responseError(trans('admin.create_failure'));
+            return $this->responseError(trans('admin.createFailure'));
         } catch (\Exception $e) {
             return $this->responseException($e);
         }
@@ -70,16 +73,17 @@ class SiteController extends Controller
     public function update(Request $request)
     {
         try {
-            $form = $this->getAdminUpdateRequest();
+            $form = $this->getUpdateRequest();
             $validator = Validator::make($form->load($request->input()), $form->rules(), $form->messages(), $form->attributes());
             if ($errorItems = $form->getErrorItems($validator)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
-                if ($this->getAdminService()->updateAdmin($form)) {
-                    return $this->responseSuccess([], trans('admin.update_success'));
+                if ($this->getService()->updateAdmin($form)) {
+                    $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                    return $this->responseSuccess([], trans('admin.updateSuccess'));
                 }
             }
-            return $this->responseError(trans('admin.update_failure'));
+            return $this->responseError(trans('admin.updateFailure'));
         } catch (\Exception $e) {
             return $this->responseException($e);
         }
@@ -89,17 +93,82 @@ class SiteController extends Controller
      *
      * @author zxf
      * @date    2019年10月29日
+     * @param int $id
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function delete(Request $request)
+    public function delete(int $id, Request $request)
     {
         try {
-            $id = $request->get('id');
-            if ($this->getAdminService()->deleteAdmin($id)) {
-                return $this->responseSuccess([], trans('admin.delete_success'));
+            $form = $this->getDeleteRequest();
+            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            if ($errorItems = $form->getErrorItems($validator)) {
+                return $this->responseError($errorItems['message'], $errorItems['data']);
+            } else {
+                if ($this->getService()->deleteAdmin($form)) {
+                    $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                    return $this->responseSuccess([], trans('admin.deleteSuccess'));
+                }
+                return $this->responseError(trans('admin.deleteFailure'));
             }
-            return $this->responseError(trans('admin.delete_failure'));
+        } catch (AdminException $e) {
+            return $this->responseError($e->getMessage());
+        } catch (\Exception $e) {
+            return $this->responseException($e);
+        }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function on(int $id, Request $request)
+    {
+        try {
+            $form = $this->getStatusRequest();
+            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            if ($errorItems = $form->getErrorItems($validator)) {
+                return $this->responseError($errorItems['message'], $errorItems['data']);
+            } else {
+                if ($this->getService()->onAdmin($form)) {
+                    $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                    return $this->responseSuccess([], trans('admin.onSuccess'));
+                }
+                return $this->responseError(trans('admin.onFailure'));
+            }
+        } catch (AdminException $e) {
+            return $this->responseError($e->getMessage());
+        } catch (\Exception $e) {
+            return $this->responseException($e);
+        }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月10日
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function off(int $id, Request $request)
+    {
+        try {
+            $form = $this->getStatusRequest();
+            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            if ($errorItems = $form->getErrorItems($validator)) {
+                return $this->responseError($errorItems['message'], $errorItems['data']);
+            } else {
+                if ($this->getService()->offAdmin($form)) {
+                    $request->merge(['operateLogParams' => $form->getOperateLogParams()]);
+                    return $this->responseSuccess([], trans('admin.offSuccess'));
+                }
+                return $this->responseError(trans('admin.offFailure'));
+            }
         } catch (AdminException $e) {
             return $this->responseError($e->getMessage());
         } catch (\Exception $e) {
@@ -113,7 +182,7 @@ class SiteController extends Controller
      * @date    2019年10月29日
      * @return \App\Modules\Admin\Services\AdminService
      */
-    private function getAdminService()
+    private function getService()
     {
         return new AdminService();
     }
@@ -124,7 +193,7 @@ class SiteController extends Controller
      * @date    2019年10月29日
      * @return AdminSearchRequest
      */
-    private function getAdminSearchRequest()
+    private function getSearchRequest()
     {
         return new AdminSearchRequest();
     }
@@ -135,7 +204,7 @@ class SiteController extends Controller
      * @date    2019年10月29日
      * @return AdminCreateRequest
      */
-    private function getAdminCreateRequest()
+    private function getCreateRequest()
     {
         return new AdminCreateRequest();
     }
@@ -146,8 +215,30 @@ class SiteController extends Controller
      * @date    2019年10月29日
      * @return AdminUpdateRequest
      */
-    private function getAdminUpdateRequest()
+    private function getUpdateRequest()
     {
         return new AdminUpdateRequest();
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月24日
+     * @return AdminDeleteRequest
+     */
+    private function getDeleteRequest()
+    {
+        return new AdminDeleteRequest();
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月24日
+     * @return AdminStatusRequest
+     */
+    private function getStatusRequest()
+    {
+        return new AdminStatusRequest();
     }
 }

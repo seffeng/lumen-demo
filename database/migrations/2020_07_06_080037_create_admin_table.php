@@ -25,7 +25,7 @@ class CreateAdminTable extends Migration
                 $table->tinyInteger('delete_id')->unsigned()->nullable(false)->default(0)->comment('删除类型');
                 $table->integer('login_count')->unsigned()->nullable(false)->default(0)->comment('登录次数');
                 $table->integer('login_at')->unsigned()->nullable(false)->default(0)->comment('登录时间');
-                $table->integer('login_ip')->unsigned()->nullable(false)->default(0)->comment('登录IP');
+                $table->string('login_ip', 39)->nullable(false)->default('')->comment('登录IP');
                 $table->integer('created_at')->unsigned()->nullable(false)->default(0)->comment('添加时间');
                 $table->integer('updated_at')->unsigned()->nullable(false)->default(0)->comment('修改时间');
                 $table->charset = 'utf8mb4';

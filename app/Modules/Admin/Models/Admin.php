@@ -72,14 +72,14 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
     /**
      * 更新登录信息
      * @author zxf
-     * @date    2019年10月21日
+     * @date   2020年12月24日
      * @param string $ipAddress
      */
-    public function updateLoginValues()
+    public function updateLoginValues(string $ipAddress = '')
     {
-        $this->login_at = time();
-        $this->login_count += 1;
-        $this->login_ip = ip2long(request()->ip());
+        $this->setAttribute('login_at', time());
+        $this->setAttribute('login_count', $this->login_count + 1);
+        $this->setAttribute('login_ip', $ipAddress);
     }
 
     /**
@@ -100,7 +100,27 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
      */
     public function delete()
     {
-        $this->delete_id = DeleteConst::YES;
+        $this->setAttribute('delete_id', DeleteConst::YES);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月11日
+     */
+    public function onAdmin()
+    {
+        $this->setAttribute('status_id', StatusConst::NORMAL);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2020年12月11日
+     */
+    public function offAdmin()
+    {
+        $this->setAttribute('status_id', StatusConst::LOCK);
     }
 
     /**
