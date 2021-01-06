@@ -36,7 +36,7 @@ class AdminService extends Service
      */
     public function getAdminById(int $id)
     {
-        return Admin::byId($id)->notDelete()->first();
+        return Admin::byId($id)->first();
     }
 
     /**
@@ -70,7 +70,7 @@ class AdminService extends Service
      */
     public function getAdminByUsername(string $username)
     {
-        return Admin::byUsername($username)->notDelete()->first();
+        return Admin::byUsername($username)->first();
     }
 
     /**
@@ -210,16 +210,12 @@ class AdminService extends Service
         if ($username = $form->getFillItems('username')) {
             $query->likeUsername($username);
         }
-        if ($username = $form->getFillItems('username')) {
-            $query->likeUsername($username);
-        }
         if ($createdStartAt = $form->getFillItems('startDate')) {
             $query->where('created_at', '>=', strtotime($createdStartAt));
         }
         if ($createdEndAt = $form->getFillItems('endDate')) {
             $query->where('created_at', '<=', strtotime($createdEndAt));
         }
-        $query->notDelete();
 
         if ($orderItems = $form->getOrderBy()) {
             foreach ($orderItems as $attribute => $order) {
@@ -343,8 +339,7 @@ class AdminService extends Service
         try {
             if ($form->getIsPass()) {
                 $model = $this->notNullById($form->getFillItems('id'));
-                $model->delete();
-                if ($model->save()) {
+                if ($model->delete()) {
                     $form->setOperateLogParams($model, TypeConst::LOG_DELETE, ModuleConst::ADMIN);
                     return true;
                 }

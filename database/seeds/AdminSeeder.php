@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\Common\Constants\StatusConst;
-use App\Common\Constants\DeleteConst;
 use App\Modules\Admin\Models\Admin;
 
 class AdminSeeder extends Seeder
@@ -16,17 +14,15 @@ class AdminSeeder extends Seeder
     {
         //
         $username = '10086';
-        if (!Admin::byUsername($username)->notDelete()->exists()) {
+        if (!Admin::byUsername($username)->exists()) {
             $model = new Admin();
             $model->fill([
                 'username' => $username,
                 'password' => 'a123456',
-                'status_id' => StatusConst::NORMAL,
-                'delete_id' => DeleteConst::NOT,
                 'login_count' => 0,
                 'login_at' => 0,
             ]);
-            $model->encryptPassword();
+            $model->loadDefaultValue()->encryptPassword();
             return $model->save();
         }
     }

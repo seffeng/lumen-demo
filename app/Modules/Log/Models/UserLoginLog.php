@@ -6,9 +6,12 @@ use App\Modules\Log\Illuminate\LoginLogType;
 use App\Modules\Log\Illuminate\LogFrom;
 use App\Modules\Log\Illuminate\LogStatus;
 use App\Common\Constants\DeleteConst;
+use App\Common\Traits\DeleteTrait;
 
 class UserLoginLog extends Model
 {
+    use DeleteTrait;
+
     /**
      *
      * @var string
@@ -62,5 +65,6 @@ class UserLoginLog extends Model
     public function loadDefaultValue()
     {
         $this->setAttribute('delete_id', DeleteConst::NOT);
+        return $this;
     }
 }

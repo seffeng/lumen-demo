@@ -10,6 +10,7 @@ use App\Common\Constants\StatusConst;
 use App\Common\Constants\DeleteConst;
 use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use App\Common\Traits\DeleteTrait;
 /**
  *
  * @date    2019年9月25日
@@ -20,11 +21,10 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
  * @method static Admin byId(int $id)
  * @method static Admin byUsername(string $username)
  * @method static Admin likeUsername(string $username, bool $left = false)
- * @method static Admin notDelete()
  */
 class Admin extends Model implements AuthenticatableContracts, JWTSubject
 {
-    use Authenticatable;
+    use Authenticatable, DeleteTrait;
 
     /**
      *
@@ -91,16 +91,7 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
     {
         $this->setAttribute('status_id', StatusConst::NORMAL);
         $this->setAttribute('delete_id', DeleteConst::NOT);
-    }
-
-    /**
-     *
-     * {@inheritDoc}
-     * @see \Illuminate\Database\Eloquent\Model::delete()
-     */
-    public function delete()
-    {
-        $this->setAttribute('delete_id', DeleteConst::YES);
+        return $this;
     }
 
     /**
@@ -161,18 +152,6 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
     public function scopeLikeUsername(Builder $query, string $username, bool $left = false)
     {
         return $query->where('username', 'like', ($left ? '%' : ''). $username .'%');
-    }
-
-    /**
-     *
-     * @author zxf
-     * @date   2020年4月3日
-     * @param  Builder $query
-     * @return Admin
-     */
-    public function scopeNotDelete(Builder $query)
-    {
-        return $query->where('delete_id', DeleteConst::NOT);
     }
 
     /**

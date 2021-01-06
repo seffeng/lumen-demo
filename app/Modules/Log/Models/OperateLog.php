@@ -6,9 +6,25 @@ use App\Modules\Log\Illuminate\LogFrom;
 use App\Modules\Log\Illuminate\OperateLogType;
 use App\Modules\Log\Illuminate\LogStatus;
 use App\Common\Constants\DeleteConst;
+use App\Common\Traits\DeleteTrait;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Modules\Log\Illuminate\OperateLogModule;
 
 class OperateLog extends Model
 {
+    use DeleteTrait;
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年1月6日
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        Relation::morphMap(LogFrom::fetchOperatorClassItems());
+    }
+
     /**
      *
      * @var string
@@ -56,11 +72,34 @@ class OperateLog extends Model
 
     /**
      *
+     * @author zxf
+     * @date   2021年1月6日
+     * @return OperateLogModule
+     */
+    public function getLogModule()
+    {
+        return new OperateLogModule($this->module_id);
+    }
+
+    /**
+     *
      * {@inheritDoc}
      * @see \Seffeng\Basics\Base\Model::loadDefaultValue()
      */
     public function loadDefaultValue()
     {
         $this->setAttribute('delete_id', DeleteConst::NOT);
+        return $this;
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年1月6日
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    public function operator()
+    {
+        return $this->morphTo(null, 'from_id', 'operator_id');
     }
 }

@@ -16,7 +16,7 @@ class BatchUserSeeder extends Seeder
     public function run()
     {
         $usernameItems = ['10000', '10001', '10002'];
-        if (User::whereIn('username', $usernameItems)->notDelete()->exists()) {
+        if (User::whereIn('username', $usernameItems)->exists()) {
             return true;
         }
         $model = new User();

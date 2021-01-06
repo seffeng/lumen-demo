@@ -9,6 +9,8 @@ use Illuminate\Auth\Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Builder;
 use App\Common\Constants\DeleteConst;
+use App\Common\Constants\StatusConst;
+use App\Common\Traits\DeleteTrait;
 /**
  *
  * @date    2019年9月25日
@@ -19,11 +21,10 @@ use App\Common\Constants\DeleteConst;
  * @method static User byId(int $id)
  * @method static User byUsername(string $username)
  * @method static User likeUsername(string $username, bool $left = false)
- * @method static User notDelete()
  */
 class User extends Model implements AuthenticatableContracts, JWTSubject
 {
-    use Authenticatable;
+    use Authenticatable, DeleteTrait;
 
     /**
      *
@@ -84,6 +85,18 @@ class User extends Model implements AuthenticatableContracts, JWTSubject
     /**
      *
      * @author zxf
+     * @date    2019年10月29日
+     */
+    public function loadDefaultValue()
+    {
+        $this->setAttribute('status_id', StatusConst::NORMAL);
+        $this->setAttribute('delete_id', DeleteConst::NOT);
+        return $this;
+    }
+
+    /**
+     *
+     * @author zxf
      * @date   2020年4月3日
      * @param Builder $query
      * @param int $id
@@ -119,18 +132,6 @@ class User extends Model implements AuthenticatableContracts, JWTSubject
     public function scopeLikeUsername(Builder $query, string $username, bool $left = false)
     {
         return $query->where('username', 'like', ($left ? '%' : ''). $username .'%');
-    }
-
-    /**
-     *
-     * @author zxf
-     * @date   2020年4月3日
-     * @param  Builder $query
-     * @return User
-     */
-    public function scopeNotDelete(Builder $query)
-    {
-        return $query->where('delete_id', DeleteConst::NOT);
     }
 
     /**
