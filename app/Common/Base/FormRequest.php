@@ -21,24 +21,9 @@ class FormRequest extends \Seffeng\Basics\Base\FormRequest
 
     /**
      *
-     * @var mixed
-     */
-    protected $operateLogModel;
-    /**
-     *
-     * @var integer
-     */
-    protected $operateLogTypeId;
-    /**
-     *
-     * @var integer
-     */
-    protected $operateLogModuleId;
-    /**
-     *
      * @var array
      */
-    protected $operateLogDiffChanges;
+    protected $operateLogPamams = [];
 
     /**
      *
@@ -83,12 +68,7 @@ class FormRequest extends \Seffeng\Basics\Base\FormRequest
      */
     public function getOperateLogParams()
     {
-        return [
-            'model' => $this->operateLogModel,
-            'typeId' => $this->operateLogTypeId,
-            'moduleId' => $this->operateLogModuleId,
-            'diffChanges' => $this->operateLogDiffChanges
-        ];
+        return $this->operateLogPamams;
     }
 
     /**
@@ -102,10 +82,12 @@ class FormRequest extends \Seffeng\Basics\Base\FormRequest
      */
     public function setOperateLogParams($operateLogModel, int $operateLogTypeId, int $operateLogModuleId, array $operateLogDiffChanges = [])
     {
-        $this->operateLogModel = $operateLogModel;
-        $this->operateLogTypeId = $operateLogTypeId;
-        $this->operateLogModuleId = $operateLogModuleId;
-        $this->operateLogDiffChanges = $operateLogDiffChanges;
+        array_push($this->operateLogPamams, [
+            'model' => $operateLogModel,
+            'typeId' => $operateLogTypeId,
+            'moduleId' => $operateLogModuleId,
+            'diffChanges' => $operateLogDiffChanges
+        ]);
     }
 
     /**

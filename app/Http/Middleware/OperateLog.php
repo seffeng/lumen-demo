@@ -28,15 +28,19 @@ class OperateLog
         $response = $next($request);
         try {
             $operateLogParams = $request->operateLogParams;
-            $model = Arr::get($operateLogParams, 'model');
-            $model && event(new OperateLogCreateEvent($model, [
-                'fromId' => $fromId,
-                'typeId' => Arr::get($operateLogParams, 'typeId', 0),
-                'moduleId' => Arr::get($operateLogParams, 'moduleId', 0),
-                'clientIp' => $request->getClientIp(),
-                'operatorId' => $this->getLoginUserId($fromId),
-                'diffChanges' => Arr::get($operateLogParams, 'diffChanges', []),
-            ]));
+            if ($operateLogParams) foreach ($operateLogParams as $operateLogParam) {
+                $model = Arr::get($operateLogParam, 'model');
+                $content = Arr::get($operateLogParam, 'content');
+                $model && event(new OperateLogCreateEvent($model, [
+                    'fromId' => $fromId,
+                    'typeId' => Arr::get($operateLogParam, 'typeId', 0),
+                    'moduleId' => Arr::get($operateLogParam, 'moduleId', 0),
+                    'clientIp' => $request->getClientIp(),
+                    'operatorId' => $this->getLoginUserId($fromId),
+                    'content' => $content,
+                    'diffChanges' => Arr::get($operateLogParam, 'diffChanges', []),
+                ]));
+            }
         } catch (BaseException $e) {
             Log::error($e->getMessage());
         } catch (\Exception $e) {
