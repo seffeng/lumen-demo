@@ -14,7 +14,8 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         //
-        \App\Console\Commands\Test::class
+        \App\Console\Commands\Test::class,
+        \App\Console\Commands\Crypt::class
     ];
 
     /**

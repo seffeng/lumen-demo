@@ -40,6 +40,14 @@ $ php ./artisan migrate --seed
 
 7、注意；
 # 数据库默认时区为 +00:00，可在 /config/database.php 注释 timezone 或修改 DB_TIMEZONE。
+
+8、数据库账号密码加密配置；
+# .env 文件配置参数 APP_CRYPT=false，若为 true 则 .env文件中 数据库账号，数据库密码，redis密码需为加密后的字符；
+# 可执行命令 php artisan command:crypt {原始字符}，如：
+# 1、数据账号为 root
+# 2、执行命令 php artisan command:crypt root
+# 3、将生成的字符填入 .env 配置 DB_USERNAME=生成字符
+# 其他需加密的字符配置参考配置文件 config/database.php
 ```
 
 ## 目录说明
