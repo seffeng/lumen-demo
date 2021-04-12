@@ -43,4 +43,8 @@ Route::group(['middleware' => ['check.login:backend', 'log.operate:' . FromConst
         Route::put('/on/{id:[0-9]+}', 'SiteController@on');
         Route::put('/off/{id:[0-9]+}', 'SiteController@off');
     });
+
+    Route::group(['namespace' => 'User', 'prefix' => 'user'], function() {
+        Route::get('', 'SiteController@index');
+    });
 });

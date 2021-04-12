@@ -14,8 +14,8 @@ use App\Modules\Log\Requests\OperateLogSearchRequest;
 use App\Modules\Log\Requests\AdminLoginLogSearchRequest;
 use Seffeng\LaravelHelpers\Helpers\Arr;
 use App\Common\Constants\FormatConst;
-use Illuminate\Support\Carbon;
 use App\Common\Constants\TypeConst;
+use Illuminate\Support\Facades\Date;
 
 class LogService extends Service
 {
@@ -163,7 +163,7 @@ class LogService extends Service
                 'typeId' => $model->type_id,
                 'typeName' => $model->getType()->getName(),
                 'content' => $model->content,
-                'createDate' => Carbon::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
             ]);
         }
         return [
@@ -255,7 +255,7 @@ class LogService extends Service
                 'fromId' => $model->getFrom()->getValue(),
                 'fromName' => $model->getFrom()->getName(),
                 'content' => $model->content,
-                'createDate' => Carbon::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
             ]);
         }
         return [

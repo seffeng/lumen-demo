@@ -11,7 +11,6 @@ use App\Common\Base\Service;
 use App\Modules\Admin\Requests\AdminSearchRequest;
 use App\Modules\Admin\Requests\AdminCreateRequest;
 use App\Modules\Admin\Requests\AdminUpdateRequest;
-use Illuminate\Support\Carbon;
 use App\Common\Constants\FormatConst;
 use App\Common\Constants\TypeConst;
 use App\Common\Constants\StatusConst;
@@ -24,6 +23,7 @@ use App\Modules\Admin\Requests\AdminStatusRequest;
 use App\Modules\Admin\Requests\AdminDeleteRequest;
 use App\Modules\Admin\Requests\AdminLoginRequest;
 use App\Modules\Admin\Exceptions\AdminPasswordException;
+use Illuminate\Support\Facades\Date;
 
 class AdminService extends Service
 {
@@ -211,10 +211,10 @@ class AdminService extends Service
             $query->likeUsername($username);
         }
         if ($createdStartAt = $form->getFillItems('startDate')) {
-            $query->where('created_at', '>=', strtotime($createdStartAt));
+            $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new Admin())->getDateFormat()));
         }
         if ($createdEndAt = $form->getFillItems('endDate')) {
-            $query->where('created_at', '<=', strtotime($createdEndAt));
+            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new Admin())->getDateFormat()));
         }
 
         if ($orderItems = $form->getOrderBy()) {
@@ -249,7 +249,9 @@ class AdminService extends Service
                 'statusId' => $model->status_id,
                 'statusName' => $model->getStatus()->getName(),
                 'statusIsNormal' => $model->getStatus()->getIsNormal(),
-                'createDate' => Carbon::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+                'loginDate' => Date::parse($model->login_at)->getTimestamp() > 0 ? Date::parse($model->login_at)->format(FormatConst::DATE_YMDHI) : '',
+                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+                'updateDate' => Date::parse($model->updated_at)->format(FormatConst::DATE_YMDHI),
             ]);
         }
         return [

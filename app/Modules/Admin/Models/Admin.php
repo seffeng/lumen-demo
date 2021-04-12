@@ -11,6 +11,7 @@ use App\Common\Constants\DeleteConst;
 use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Common\Traits\DeleteTrait;
+
 /**
  *
  * @date    2019年9月25日
@@ -37,6 +38,14 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
      * @var array
      */
     protected $fillable = ['username', 'password'];
+
+    /**
+     *
+     * @var array
+     */
+    protected $casts = [
+        'login_at' => 'datetime'
+    ];
 
     /**
      * 密码加密
@@ -77,7 +86,7 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
      */
     public function updateLoginValues(string $ipAddress = '')
     {
-        $this->setAttribute('login_at', time());
+        $this->setAttribute('login_at', $this->freshTimestamp());
         $this->setAttribute('login_count', $this->login_count + 1);
         $this->setAttribute('login_ip', $ipAddress);
     }

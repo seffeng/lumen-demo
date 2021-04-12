@@ -17,8 +17,12 @@ use App\Common\Constants\TypeConst;
 use App\Common\Constants\ModuleConst;
 use App\Common\Constants\StatusConst;
 use App\Modules\User\Exceptions\UserPasswordException;
+use Illuminate\Support\Facades\Date;
+use App\Common\Constants\FormatConst;
+use App\Modules\User\Requests\UserSearchRequest;
+use App\Common\Base\Service;
 
-class UserService
+class UserService extends Service
 {
     /**
      *
@@ -222,6 +226,76 @@ class UserService
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年4月12日
+     * @param UserSearchRequest $form
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getUserPaginate(UserSearchRequest $form)
+    {
+        /**
+         *
+         * @var User $query
+         */
+        $query = User::on();
+        if ($id = $form->getFillItems('id')) {
+            $query->byId($id);
+        }
+        if ($username = $form->getFillItems('username')) {
+            $query->likeUsername($username);
+        }
+        if ($createdStartAt = $form->getFillItems('startDate')) {
+            $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new User())->getDateFormat()));
+        }
+        if ($createdEndAt = $form->getFillItems('endDate')) {
+            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new User())->getDateFormat()));
+        }
+
+        if ($orderItems = $form->getOrderBy()) {
+            foreach ($orderItems as $attribute => $order) {
+                $query->orderBy($attribute, $order);
+            }
+        } else {
+            $query->orderBy('id', TypeConst::ORDERBY_DESC);
+        }
+        return $query->paginate($form->getPerPage());
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date    2021年4月12日
+     * @param  UserSearchRequest $form
+     * @return array
+     */
+    public function getUserStore(UserSearchRequest $form)
+    {
+        $paginator = $this->getUserPaginate($form);
+        $items = [];
+        /**
+         *
+         * @var User $model
+         */
+        if ($paginator) foreach ($paginator as $model) {
+            $items[] = $this->filterByFillable([
+                'id' => $model->id,
+                'username' => $model->username,
+                'statusId' => $model->status_id,
+                'statusName' => $model->getStatus()->getName(),
+                'statusIsNormal' => $model->getStatus()->getIsNormal(),
+                'loginDate' => Date::parse($model->login_at)->getTimestamp() > 0 ? Date::parse($model->login_at)->format(FormatConst::DATE_YMDHI) : '',
+                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+                'updateDate' => Date::parse($model->updated_at)->format(FormatConst::DATE_YMDHI),
+            ]);
+        }
+        return [
+            'items' => $items,
+            'page' => $this->getPaginate($paginator)
+        ];
     }
 
     /**
