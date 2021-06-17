@@ -26,11 +26,43 @@ class Controller extends \Seffeng\Basics\Base\Controller
      */
     public function responseSuccess($data = [], string $message = 'success', array $headers = [])
     {
+        return parent::responseSuccess($data, $message, $this->mergeHeaders($headers));
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Seffeng\Basics\Base\Controller::responseError()
+     */
+    public function responseError(string $message, $data = [], int $code = null, array $headers = [])
+    {
+        return parent::responseError($message, $data, $code, $this->mergeHeaders($headers));
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \Seffeng\Basics\Base\Controller::responseException()
+     */
+    public function responseException($e, array $headers = [])
+    {
+        return parent::responseException($e, $this->mergeHeaders($headers));
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年3月18日
+     * @param array $headers
+     * @return array
+     */
+    protected function mergeHeaders(array $headers = [])
+    {
         $customHeaders = [];
         if ($token = Request::header('Refresh-Token')) {
             $customHeaders['Refresh-Token'] = $token;
+            $customHeaders['Access-Control-Expose-Headers'][] = 'Refresh-Token';
         }
-        $headers = Arr::merge($headers, $customHeaders);
-        return parent::responseSuccess($data, $message, $headers);
+        return Arr::merge($headers, $customHeaders);
     }
 }
