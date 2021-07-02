@@ -2,7 +2,7 @@
 
 namespace App\Web\Api\Controllers\Site;
 
-use App\Web\Backend\Common\Controller;
+use App\Web\Api\Common\Controller;
 use Illuminate\Http\Request;
 use App\Common\Actions\DownListAction;
 

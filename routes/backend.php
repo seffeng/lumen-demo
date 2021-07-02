@@ -39,9 +39,9 @@ Route::group(['middleware' => ['check.login:backend', 'log.operate:' . FromConst
         Route::get('', 'SiteController@index');
         Route::post('', 'SiteController@create');
         Route::put('', 'SiteController@update');
-        Route::delete('/{id:[0-9]+}', 'SiteController@delete');
-        Route::put('/on/{id:[0-9]+}', 'SiteController@on');
-        Route::put('/off/{id:[0-9]+}', 'SiteController@off');
+        Route::delete('', 'SiteController@delete');
+        Route::put('/on', 'SiteController@on');
+        Route::put('/off', 'SiteController@off');
     });
 
     Route::group(['namespace' => 'User', 'prefix' => 'user'], function() {

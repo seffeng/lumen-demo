@@ -93,15 +93,14 @@ class SiteController extends Controller
      *
      * @author zxf
      * @date    2019年10月29日
-     * @param int $id
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function delete(int $id, Request $request)
+    public function delete(Request $request)
     {
         try {
             $form = $this->getDeleteRequest();
-            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            $validator = Validator::make($form->load($request->input()), $form->rules(), $form->messages(), $form->attributes());
             if ($errorItems = $form->getErrorItems($validator)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
@@ -122,15 +121,14 @@ class SiteController extends Controller
      *
      * @author zxf
      * @date   2020年12月10日
-     * @param int $id
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function on(int $id, Request $request)
+    public function on(Request $request)
     {
         try {
             $form = $this->getStatusRequest();
-            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            $validator = Validator::make($form->load($request->input()), $form->rules(), $form->messages(), $form->attributes());
             if ($errorItems = $form->getErrorItems($validator)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {
@@ -151,15 +149,14 @@ class SiteController extends Controller
      *
      * @author zxf
      * @date   2020年12月10日
-     * @param int $id
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function off(int $id, Request $request)
+    public function off(Request $request)
     {
         try {
             $form = $this->getStatusRequest();
-            $validator = Validator::make($form->load(['id' => $id]), $form->rules(), $form->messages(), $form->attributes());
+            $validator = Validator::make($form->load($request->input()), $form->rules(), $form->messages(), $form->attributes());
             if ($errorItems = $form->getErrorItems($validator)) {
                 return $this->responseError($errorItems['message'], $errorItems['data']);
             } else {

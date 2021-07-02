@@ -86,7 +86,7 @@ class Admin extends Model implements AuthenticatableContracts, JWTSubject
      */
     public function updateLoginValues(string $ipAddress = '')
     {
-        $this->setAttribute('login_at', $this->freshTimestamp());
+        $this->setAttribute('login_at', $this->freshTimestampString());
         $this->setAttribute('login_count', $this->login_count + 1);
         $this->setAttribute('login_ip', $ipAddress);
     }

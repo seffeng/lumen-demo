@@ -3,11 +3,10 @@
 namespace App\Common\Actions;
 
 use Illuminate\Http\Request;
+use Seffeng\LaravelHelpers\Helpers\Str;
 
 class DownListAction
 {
-    const TYPE_TEST = 'test';
-
     /**
      *
      * @author zxf
@@ -27,16 +26,29 @@ class DownListAction
                 $typeList = [$type];
             }
             if ($typeList) foreach ($typeList as $type) {
-                switch ($type) {
-                    case self::TYPE_TEST : {
-                        $data[$type] = ['key1' => 'value1', 'key2' => 'value2'];
-                        break;
-                    }
+                if (!$this->can($type)) {
+                    continue;
+                }
+                $class =  '\\App\\Common\\Actions\\DownList\\' . Str::studly($type);
+                if (class_exists($class)) {
+                    $data[$type] = (new $class)->handle($request);
                 }
             }
             return $data;
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年7月2日
+     * @param string $type
+     * @return boolean
+     */
+    protected function can($type)
+    {
+        return true;
     }
 }

@@ -214,7 +214,7 @@ class AdminService extends Service
             $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new Admin())->getDateFormat()));
         }
         if ($createdEndAt = $form->getFillItems('endDate')) {
-            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new Admin())->getDateFormat()));
+            $query->where('created_at', '<', Date::parse($createdEndAt)->addDay()->format((new Admin())->getDateFormat()));
         }
 
         if ($orderItems = $form->getOrderBy()) {

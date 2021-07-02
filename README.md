@@ -157,6 +157,10 @@ $ php ./artisan migrate --seed
 
 无
 
+## 更新日志
+
+[changlog](CHANGELOG.md)
+
 ## 已有接口
 
 ### api
@@ -183,9 +187,9 @@ $ php ./artisan migrate --seed
 | 管理员列表     | /admin           | GET    |                   |
 | 管理员添加     | /admin           | POST   | username,password |
 | 管理员编辑     | /admin           | PUT    | username,password |
-| 管理员删除     | /admin/{id}      | DELETE | id                |
-| 管理员锁定     | /admin/off/{id}  | PUT    | id                |
-| 管理员解锁     | /admin/on/{id}   | PUT    | id                |
+| 管理员删除     | /admin           | DELETE | id                |
+| 管理员锁定     | /admin/off       | PUT    | id                |
+| 管理员解锁     | /admin/on        | PUT    | id                |
 | 管理员登录日志 | /admin/login-log | GET    |                   |
 | 操作日志       | /operate-log     | GET    |                   |
 

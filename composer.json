@@ -26,7 +26,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "illuminate/redis": "^8.17",
         "laravel/lumen-framework": "^8.0",
-        "seffeng/lumen-basics": "^1.0",
+        "seffeng/lumen-basics": "^1.2",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {

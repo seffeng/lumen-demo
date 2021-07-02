@@ -5,6 +5,7 @@ use App\Modules\User\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Common\Constants\StatusConst;
 use App\Common\Constants\DeleteConst;
+use Illuminate\Support\Facades\Date;
 
 class BatchUserSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class BatchUserSeeder extends Seeder
         $model->password = 'a123456';
         $password = $model->encryptPassword();
         $tableName = $model->getTable();
-        $time = time();
+        $time = Date::now()->format((new User())->getDateFormat());
         $data = [];
         foreach ($usernameItems as $username) {
             $data[] = [
