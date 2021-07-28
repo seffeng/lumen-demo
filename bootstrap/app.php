@@ -106,7 +106,7 @@ $app->register(Illuminate\Redis\RedisServiceProvider::class);
 $app->register(Fruitcake\Cors\CorsServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
-if (config('app.debug')) {
+if (config('app.debug') && class_exists(Barryvdh\Debugbar\LumenServiceProvider::class)) {
     $app->configure('debugbar');
     $app->register(Barryvdh\Debugbar\LumenServiceProvider::class);
 }
