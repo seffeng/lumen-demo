@@ -9,7 +9,7 @@ use App\Common\Base\FormRequest;
  * @property int $userId
  * @property int $statusId
  * @property int $typeId
- * @property string $content
+ * @property int $fromId
  */
 class UserLoginLogSearchRequest extends FormRequest
 {

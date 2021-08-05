@@ -17,17 +17,7 @@ class UserLoginRequest extends FormRequest
     /**
      *
      * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::authorize()
-     */
-    public function authorize()
-    {
-        return true;
-    }
-
-    /**
-     *
-     * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::rules()
+     * @see \Seffeng\Basics\Base\FormRequest::rules()
      */
     public function rules()
     {
@@ -60,7 +50,7 @@ class UserLoginRequest extends FormRequest
     /**
      *
      * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::attributes()
+     * @see \Seffeng\Basics\Base\FormRequest::attributes()
      */
     public function attributes()
     {

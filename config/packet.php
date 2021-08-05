@@ -7,7 +7,6 @@ return [
     'api' => [  // API
         'namespace' => 'App\Web\Api\Controllers',
         'guard' => 'api',
-        'middleware' => 'api',
     ],
     'backend' => [  // 后台
         'namespace' => 'App\Web\Backend\Controllers',

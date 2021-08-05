@@ -23,7 +23,7 @@ class AdminLoginLogCreateRequest extends FormRequest
     /**
      *
      * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::rules()
+     * @see \Seffeng\Basics\Base\FormRequest::rules()
      */
     public function rules()
     {

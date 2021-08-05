@@ -25,7 +25,7 @@ class UserLoginLogCreateRequest extends FormRequest
     /**
      *
      * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::rules()
+     * @see \Seffeng\Basics\Base\FormRequest::rules()
      */
     public function rules()
     {
@@ -46,7 +46,7 @@ class UserLoginLogCreateRequest extends FormRequest
     /**
      *
      * {@inheritDoc}
-     * @see \App\Common\Base\FormRequest::attributes()
+     * @see \Seffeng\Basics\Base\FormRequest::attributes()
      */
     public function attributes()
     {
