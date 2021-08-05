@@ -12,6 +12,7 @@ use App\Modules\Log\Requests\UserLoginLogCreateRequest;
 use App\Modules\Log\Exceptions\LoginLogException;
 use App\Modules\Log\Requests\OperateLogSearchRequest;
 use App\Modules\Log\Requests\AdminLoginLogSearchRequest;
+use App\Modules\Log\Requests\UserLoginLogSearchRequest;
 use Seffeng\LaravelHelpers\Helpers\Arr;
 use App\Common\Constants\FormatConst;
 use App\Common\Constants\TypeConst;
@@ -107,7 +108,7 @@ class LogService extends Service
             $query->byId($id);
         }
         if ($adminId = $form->getFillItems('adminId')) {
-            $query->byStatusId($adminId);
+            $query->byAdminId($adminId);
         }
         if ($username = $form->getFillItems('username')) {
             $query->whereHas('admin', function($query) use ($username) {
@@ -120,11 +121,14 @@ class LogService extends Service
         if ($typeId = $form->getFillItems('typeId')) {
             $query->byTypeId($typeId);
         }
+        if ($fromId = $form->getFillItems('fromId')) {
+            $query->byFromId($fromId);
+        }
         if ($createdStartAt = $form->getFillItems('startDate')) {
-            $query->where('created_at', '>=', strtotime($createdStartAt));
+            $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new AdminLoginLog())->getDateFormat()));
         }
         if ($createdEndAt = $form->getFillItems('endDate')) {
-            $query->where('created_at', '<=', strtotime($createdEndAt));
+            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new AdminLoginLog())->getDateFormat()));
         }
 
         if ($orderItems = $form->getOrderBy()) {
@@ -153,23 +157,116 @@ class LogService extends Service
          * @var AdminLoginLog $model
          */
         if ($paginator) foreach ($paginator as $model) {
-            $admin = $model->admin;
-            $items[] = $this->filterByFillable([
-                'id' => $model->id,
-                'username' => Arr::get($admin, 'username', ''),
-                'statusId' => $model->status_id,
-                'statusName' => $model->getStatus()->getName(),
-                'statusIsSuccess' => $model->getStatus()->isSuccess(),
-                'typeId' => $model->type_id,
-                'typeName' => $model->getType()->getName(),
-                'content' => $model->content,
-                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
-            ]);
+            $items[] = $this->parseLoginLogModel($model);
         }
         return [
             'items' => $items,
             'page' => $this->getPaginate($paginator)
         ];
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param UserLoginLogSearchRequest $form
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getUserLoginLogPaginate(UserLoginLogSearchRequest $form)
+    {
+        /**
+         *
+         * @var UserLoginLog $query
+         */
+        $query = UserLoginLog::on()->with($form->getWith());
+        if ($id = $form->getFillItems('id')) {
+            $query->byId($id);
+        }
+        if ($userId = $form->getFillItems('userId')) {
+            $query->byUserId($userId);
+        }
+        if ($username = $form->getFillItems('username')) {
+            $query->whereHas('user', function($query) use ($username) {
+                $query->likeUsername($username);
+            });
+        }
+        if ($statusId = $form->getFillItems('statusId')) {
+            $query->byStatusId($statusId);
+        }
+        if ($typeId = $form->getFillItems('typeId')) {
+            $query->byTypeId($typeId);
+        }
+        if ($fromId = $form->getFillItems('fromId')) {
+            $query->byFromId($fromId);
+        }
+        if ($createdStartAt = $form->getFillItems('startDate')) {
+            $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new UserLoginLog())->getDateFormat()));
+        }
+        if ($createdEndAt = $form->getFillItems('endDate')) {
+            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new UserLoginLog())->getDateFormat()));
+        }
+
+        if ($orderItems = $form->getOrderBy()) {
+            foreach ($orderItems as $attribute => $order) {
+                $query->orderBy($attribute, $order);
+            }
+        } else {
+            $query->orderBy('id', TypeConst::ORDERBY_DESC);
+        }
+        return $query->paginate($form->getPerPage());
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param UserLoginLogSearchRequest $form
+     * @return array
+     */
+    public function getUserLoginLogStore(UserLoginLogSearchRequest $form)
+    {
+        $paginator = $this->getUserLoginLogPaginate($form);
+        $items = [];
+        /**
+         *
+         * @var UserLoginLog $model
+         */
+        if ($paginator) foreach ($paginator as $model) {
+            $items[] = $this->parseLoginLogModel($model);
+        }
+        return [
+            'items' => $items,
+            'page' => $this->getPaginate($paginator)
+        ];
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param UserLoginLog|AdminLoginLog $model
+     * @return array
+     */
+    protected function parseLoginLogModel($model)
+    {
+        if ($model instanceof UserLoginLog) {
+            $user = $model->user;
+        } elseif ($model instanceof AdminLoginLog) {
+            $user = $model->admin;
+        } else {
+            $user = null;
+        }
+        return $this->filterByFillable([
+            'id' => $model->id,
+            'username' => Arr::get($user, 'username', ''),
+            'statusId' => $model->status_id,
+            'statusName' => $model->getStatus()->getName(),
+            'statusIsSuccess' => $model->getStatus()->isSuccess(),
+            'typeId' => $model->type_id,
+            'typeName' => $model->getType()->getName(),
+            'content' => $model->content,
+            'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+        ]);
     }
 
     /**
@@ -209,11 +306,14 @@ class LogService extends Service
         if ($typeId = $form->getFillItems('typeId')) {
             $query->byTypeId($typeId);
         }
+        if ($fromId = $form->getFillItems('fromId')) {
+            $query->byFromId($fromId);
+        }
         if ($createdStartAt = $form->getFillItems('startDate')) {
-            $query->where('created_at', '>=', strtotime($createdStartAt));
+            $query->where('created_at', '>=', Date::parse($createdStartAt)->format((new OperateLog())->getDateFormat()));
         }
         if ($createdEndAt = $form->getFillItems('endDate')) {
-            $query->where('created_at', '<=', strtotime($createdEndAt));
+            $query->where('created_at', '<=', Date::parse($createdEndAt)->addDay()->format((new OperateLog())->getDateFormat()));
         }
 
         if ($orderItems = $form->getOrderBy()) {
@@ -242,25 +342,42 @@ class LogService extends Service
          * @var OperateLog $model
          */
         if ($paginator) foreach ($paginator as $model) {
-            $operator = $model->operator;
-            $items[] = $this->filterByFillable([
-                'id' => $model->id,
-                'operatorId' => Arr::get($operator, 'id', ''),
-                'username' => Arr::get($operator, 'username', ''),
-                'statusId' => $model->status_id,
-                'statusName' => $model->getStatus()->getName(),
-                'statusIsSuccess' => $model->getStatus()->isSuccess(),
-                'typeId' => $model->type_id,
-                'typeName' => $model->getType()->getName(),
-                'fromId' => $model->getFrom()->getValue(),
-                'fromName' => $model->getFrom()->getName(),
-                'content' => $model->content,
-                'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
-            ]);
+            $items[] = $this->parseOperateLogModel($model);
         }
         return [
             'items' => $items,
             'page' => $this->getPaginate($paginator)
         ];
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param OperateLog $model
+     * @return array
+     */
+    protected function parseOperateLogModel(OperateLog $model)
+    {
+        $operator = $model->operator;
+        $resource = $model->resource;
+        return $this->filterByFillable([
+            'id' => $model->id,
+            'operatorId' => Arr::get($operator, 'id', ''),
+            'username' => Arr::get($operator, 'username', ''),
+            'statusId' => $model->status_id,
+            'statusName' => $model->getStatus()->getName(),
+            'statusIsSuccess' => $model->getStatus()->isSuccess(),
+            'typeId' => $model->type_id,
+            'typeName' => $model->getType()->getName(),
+            'fromId' => $model->getFrom()->getValue(),
+            'fromName' => $model->getFrom()->getName(),
+            'moduleId' => $model->module_id,
+            'moduleName' => $model->getLogModule()->getName(),
+            'resId' => $model->res_id,
+            'resource' => Arr::get($resource, 'name', Arr::get($resource, 'username', '')),
+            'content' => $model->content,
+            'createDate' => Date::parse($model->created_at)->format(FormatConst::DATE_YMDHI),
+        ]);
     }
 }

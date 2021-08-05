@@ -28,6 +28,7 @@ Route::group(['middleware' => ['check.login:backend', 'log.operate:' . FromConst
     Route::group(['namespace' => 'Log'], function() {
         Route::get('/operate-log', 'SiteController@operateLog');
         Route::get('/admin/login-log', 'SiteController@adminLoginLog');
+        Route::get('/user/login-log', 'SiteController@userLoginLog');
     });
 
     Route::group(['namespace' => 'Auth'], function() {

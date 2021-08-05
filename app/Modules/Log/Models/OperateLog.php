@@ -9,7 +9,20 @@ use App\Common\Constants\DeleteConst;
 use App\Common\Traits\DeleteTrait;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Modules\Log\Illuminate\OperateLogModule;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ *
+ * @author zxf
+ * @date   2021年8月5日
+ * @method static OperateLog byId(int $id)
+ * @method static OperateLog byResId(int $resId)
+ * @method static OperateLog byStatusId(int $statusId)
+ * @method static OperateLog byFromId(int $fromId)
+ * @method static OperateLog byTypeId(int $typeId)
+ * @method static OperateLog byModuleId(int $moduleId)
+ * @method static OperateLog byOperatorId(int $operatorId)
+ */
 class OperateLog extends Model
 {
     use DeleteTrait;
@@ -22,7 +35,6 @@ class OperateLog extends Model
     protected static function boot()
     {
         parent::boot();
-        Relation::morphMap(LogFrom::fetchOperatorClassItems());
     }
 
     /**
@@ -100,6 +112,110 @@ class OperateLog extends Model
      */
     public function operator()
     {
+        Relation::morphMap(LogFrom::fetchOperatorClassItems());
         return $this->morphTo(null, 'from_id', 'operator_id');
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    public function resource()
+    {
+        Relation::morphMap(OperateLogModule::fetchResourceClassItems());
+        return $this->morphTo(null, 'module_id', 'res_id');
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $id
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeById(Builder $query, int $id)
+    {
+        return $query->where('id', $id);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $resId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByResId(Builder $query, int $resId)
+    {
+        return $query->where('res_id', $resId);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $statusId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByStatusId(Builder $query, int $statusId)
+    {
+        return $query->where('status_id', $statusId);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $typeId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByTypeId(Builder $query, int $typeId)
+    {
+        return $query->where('type_id', $typeId);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $fromId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByFromId(Builder $query, int $fromId)
+    {
+        return $query->where('from_id', $fromId);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $moduleId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByModuleId(Builder $query, int $moduleId)
+    {
+        return $query->where('module_id', $moduleId);
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @param Builder $query
+     * @param int $operatorId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByOperatorId(Builder $query, int $operatorId)
+    {
+        return $query->where('operator_id', $operatorId);
     }
 }

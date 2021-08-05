@@ -7,6 +7,7 @@ use App\Web\Backend\Common\Controller;
 use App\Modules\Log\Services\LogService;
 use App\Web\Backend\Requests\Log\AdminLoginLogSearchRequest;
 use App\Web\Backend\Requests\Log\OperateLogSearchRequest;
+use App\Web\Backend\Requests\Log\UserLoginLogSearchRequest;
 
 class SiteController extends Controller
 {
@@ -25,7 +26,7 @@ class SiteController extends Controller
             $perPage = $request->get($form->getPerPageName());
             $perPage > 0 && $form->setPerPage($perPage);
             $form->sortable();
-            $form->setWith(['operator']);
+            $form->setWith(['operator', 'resource']);
             $items = $this->getService()->getOperateLogStore($form);
             return $this->responseSuccess($items);
         } catch (\Exception $e) {
@@ -59,6 +60,29 @@ class SiteController extends Controller
     /**
      *
      * @author zxf
+     * @date   2021年8月5日
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function userLoginLog(Request $request)
+    {
+        try {
+            $form = $this->getUserLoginLogSearchRequest();
+            $form->load($request->input());
+            $perPage = $request->get($form->getPerPageName());
+            $perPage > 0 && $form->setPerPage($perPage);
+            $form->sortable();
+            $form->setWith(['user']);
+            $items = $this->getService()->getUserLoginLogStore($form);
+            return $this->responseSuccess($items);
+        } catch (\Exception $e) {
+            return $this->responseException($e);
+        }
+    }
+
+    /**
+     *
+     * @author zxf
      * @date   2020年12月31日
      * @return LogService
      */
@@ -76,6 +100,17 @@ class SiteController extends Controller
     private function getAdminLoginLogSearchRequest()
     {
         return new AdminLoginLogSearchRequest();
+    }
+
+    /**
+     *
+     * @author zxf
+     * @date   2021年8月5日
+     * @return UserLoginLogSearchRequest
+     */
+    private function getUserLoginLogSearchRequest()
+    {
+        return new UserLoginLogSearchRequest();
     }
 
     /**
