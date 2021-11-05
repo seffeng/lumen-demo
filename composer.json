@@ -22,15 +22,15 @@
         "sort-packages": true
     },
     "require": {
-        "php": "^7.2.5",
-        "fruitcake/laravel-cors": "^2.0",
-        "illuminate/redis": "^8.17",
-        "laravel/lumen-framework": "^8.0",
-        "seffeng/lumen-basics": "^1.2",
-        "tymon/jwt-auth": "^1.0"
+        "php": ">=7.2.5",
+        "fruitcake/laravel-cors": ">=2.0",
+        "illuminate/redis": ">=8.17",
+        "laravel/lumen-framework": ">=8.0",
+        "seffeng/lumen-basics": ">=1.2",
+        "tymon/jwt-auth": ">=1.0"
     },
     "require-dev": {
-        "barryvdh/laravel-debugbar": "^3.2"
+        "barryvdh/laravel-debugbar": ">=3.2"
     },
     "autoload": {
         "classmap": [
