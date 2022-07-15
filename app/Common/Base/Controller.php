@@ -24,9 +24,9 @@ class Controller extends \Seffeng\Basics\Base\Controller
      * {@inheritDoc}
      * @see \Seffeng\Basics\Base\Controller::responseSuccess()
      */
-    public function responseSuccess($data = [], string $message = 'success', array $headers = [])
+    public function responseSuccess($data = [], string $message = 'success', array $headers = [], int $code = null)
     {
-        return parent::responseSuccess($data, $message, $this->mergeHeaders($headers));
+        return parent::responseSuccess($data, $message, $this->mergeHeaders($headers), $code);
     }
 
     /**

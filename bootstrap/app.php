@@ -76,10 +76,6 @@ $app->singleton(
 |
 */
 
-$app->middleware([
-    Fruitcake\Cors\HandleCors::class
-]);
-
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'check.login' => App\Http\Middleware\CheckLogin::class,
@@ -102,9 +98,6 @@ $app->register(App\Providers\AppServiceProvider::class);
 $app->register(App\Providers\AuthServiceProvider::class);
 $app->register(App\Providers\EventServiceProvider::class);
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
-
-$app->register(Fruitcake\Cors\CorsServiceProvider::class);
-$app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 
 if (config('app.debug') && class_exists(Barryvdh\Debugbar\LumenServiceProvider::class)) {
     $app->configure('debugbar');
