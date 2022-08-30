@@ -3,7 +3,7 @@
 namespace App\Common\Constants;
 
 use Seffeng\LaravelHelpers\Helpers\Arr;
-use Seffeng\LaravelHelpers\Helpers\ReplaceArrayValue;
+use Seffeng\ArrHelper\ReplaceArrayValue;
 
 /**
  * 错误常量
